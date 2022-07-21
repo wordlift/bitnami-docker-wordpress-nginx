@@ -56,7 +56,7 @@ jobs:
               echo "*** Tag 3: $tag3 ***"
               
               ## Tag the images
-              echo "*** Building image with tags $tag0, $tag1, $tag2 and $tag3 ***"
-              docker build . -t $tag0 -t $tag1 -t $tag2 -t $tag3
+              echo "*** Building image in $version/$os-$osrel with tags $tag0, $tag1, $tag2 and $tag3 ***"
+              docker build "$version/$os-$osrel" -t $tag0 -t $tag1 -t $tag2 -t $tag3
           done
 
