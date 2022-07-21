@@ -16,6 +16,7 @@ jobs:
           echo "*** Configuring the local git ***"
           git config --global user.email "repo-bitnami-docker-wordpress-nginx@wordlift.io"
           git config --global user.name "wordlift-bot"
+          git config --global advice.detachedHead false
 
           ## Checkout the tags
           echo "*** Cloning the original bitnami/bitnami-docker-wordpress-nginx repo ***"
