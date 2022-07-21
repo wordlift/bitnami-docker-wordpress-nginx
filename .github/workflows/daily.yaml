@@ -24,12 +24,8 @@ jobs:
           cd bitnami-docker-wordpress-nginx
 
           # Build the images
-<<<<<<< HEAD
           echo ${{ secrets.GITHUB_TOKEN }} | docker login --username ${{ github.repository_owner }} --password-stdin ghcr.io
           # echo ${{ secrets.DOCKER_TOCKEN }} | docker login --username ${{ secrets.DOCKER_USERNAME }}
-=======
-          echo ${{ secrets.GHCR_TOKEN }} | docker login --username ${{ secrets.GHCR_USER }} --password-stdin ghcr.io
->>>>>>> ac7f140046ba20c82399582554616866e7f8c9a7
 
           tags=$(git describe --tags $(git rev-list --tags --after=$(date -d '-1 day' '+%s')))
           for tag in $tags; do
