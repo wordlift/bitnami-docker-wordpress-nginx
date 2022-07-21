@@ -24,7 +24,12 @@ jobs:
           cd bitnami-docker-wordpress-nginx
 
           # Build the images
+<<<<<<< HEAD
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login --username ${{ github.repository_owner }} --password-stdin ghcr.io
+          # echo ${{ secrets.DOCKER_TOCKEN }} | docker login --username ${{ secrets.DOCKER_USERNAME }}
+=======
           echo ${{ secrets.GHCR_TOKEN }} | docker login --username ${{ secrets.GHCR_USER }} --password-stdin ghcr.io
+>>>>>>> ac7f140046ba20c82399582554616866e7f8c9a7
 
           tags=$(git describe --tags $(git rev-list --tags --after=$(date -d '-1 day' '+%s')))
           for tag in $tags; do
@@ -45,16 +50,16 @@ jobs:
               osrel=$(echo $tag | cut -d '-' -f3)
               echo "*** OS Rel: $osrel ***"
               # Ex: 6
-              tag0="${{ github.repository }}:$major"
+              tag0="wordlift/wordpress-nginx:$major"
               echo "*** Tag 0: $tag0 ***"
               # Ex: 6-debian-11
-              tag1="${{ github.repository }}:$major-$os-$osrel"
+              tag1="wordlift/wordpress-nginx:$major-$os-$osrel"
               echo "*** Tag 1: $tag1 ***"
               # Ex: 6.0.0
-              tag2="${{ github.repository }}:$version"
+              tag2="wordlift/wordpress-nginx:$version"
               echo "*** Tag 2: $tag2 ***"
               # Ex: 6.0.0-debian-11-r0
-              tag3="${{ github.repository }}:$tag"
+              tag3="wordlift/wordpress-nginx:$tag"
               echo "*** Tag 3: $tag3 ***"
               
               ## Tag the images
@@ -66,5 +71,9 @@ jobs:
               docker push ghcr.io/$tag1
               docker push ghcr.io/$tag2
               docker push ghcr.io/$tag3
+              # docker push $tag0
+              # docker push $tag1
+              # docker push $tag2
+              # docker push $tag3
           done
 
