@@ -19,7 +19,8 @@ jobs:
 
           ## Checkout the tags
           echo "*** Cloning the original bitnami/bitnami-docker-wordpress-nginx repo ***"
-          git clone https://github.com/bitnami/bitnami-docker-wordpress-nginx.git .
+          git clone https://github.com/bitnami/bitnami-docker-wordpress-nginx.git
+          cd bitnami-docker-wordpress-nginx
 
           # Build the images
           echo ${{ secrets.GITHUB_TOKEN }} | docker login --username ${{ github.repository_owner }} --password-stdin ghcr.io
