@@ -43,7 +43,7 @@ jobs:
               osrel=$(echo $tag | cut -d '-' -f3)
               echo "*** OS Rel: $osrel ***"
               # Ex: 6
-              tag0="${{ github.repository }}$(echo $version | grep -Eo '^(\d+)')"
+              tag0="${{ github.repository }}$(echo $version | cut -d'.' -f1)"
               echo "*** Tag 0: $tag0 ***"
               # Ex: 6-debian-11
               tag1="${{ github.repository }}$tag0-$os-$osrel"
