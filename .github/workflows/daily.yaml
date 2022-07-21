@@ -38,25 +38,27 @@ jobs:
               echo "*** Preparing tags ***"
               version=$(echo $tag | cut -d '-' -f1)
               echo "*** Version: $version ***"
+              major=$(echo $version | cut -d'.' -f1)
+              echo "*** Major: $major ***"
               os=$(echo $tag | cut -d '-' -f2)
               echo "*** OS: $os ***"
               osrel=$(echo $tag | cut -d '-' -f3)
               echo "*** OS Rel: $osrel ***"
               # Ex: 6
-              tag0="${{ github.repository }}$(echo $version | cut -d'.' -f1)"
+              tag0="${{ github.repository }}:$major"
               echo "*** Tag 0: $tag0 ***"
               # Ex: 6-debian-11
-              tag1="${{ github.repository }}$tag0-$os-$osrel"
+              tag1="${{ github.repository }}:$tag0-$os-$osrel"
               echo "*** Tag 1: $tag1 ***"
               # Ex: 6.0.0
-              tag2="${{ github.repository }}$version"
+              tag2="${{ github.repository }}:$version"
               echo "*** Tag 2: $tag2 ***"
               # Ex: 6.0.0-debian-11-r0
-              tag3="${{ github.repository }}$tag"
+              tag3="${{ github.repository }}:$tag"
               echo "*** Tag 3: $tag3 ***"
               
               ## Tag the images
-              echo "*** Building image in $tag0/$os-$osrel with tags $tag0, $tag1, $tag2 and $tag3 ***"
-              docker build "$tag0/$os-$osrel" -t $tag0 -t $tag1 -t $tag2 -t $tag3
+              echo "*** Building image in $major/$os-$osrel with tags $tag0, $tag1, $tag2 and $tag3 ***"
+              docker build "$major/$os-$osrel" -t $tag0 -t $tag1 -t $tag2 -t $tag3
           done
 
