@@ -24,7 +24,7 @@ jobs:
           cd bitnami-docker-wordpress-nginx
 
           # Build the images
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login --username ${{ github.repository_owner }} --password-stdin ghcr.io
+          echo ${{ secrets.GHCR_TOKEN }} | docker login --username ${{ secrets.GHCR_USER }} --password-stdin ghcr.io
 
           tags=$(git describe --tags $(git rev-list --tags --after=$(date -d '-1 day' '+%s')))
           for tag in $tags; do
@@ -45,16 +45,16 @@ jobs:
               osrel=$(echo $tag | cut -d '-' -f3)
               echo "*** OS Rel: $osrel ***"
               # Ex: 6
-              tag0="wordlift/wordpress-nginx:$major"
+              tag0="${{ github.repository }}:$major"
               echo "*** Tag 0: $tag0 ***"
               # Ex: 6-debian-11
-              tag1="wordlift/wordpress-nginx:$major-$os-$osrel"
+              tag1="${{ github.repository }}:$major-$os-$osrel"
               echo "*** Tag 1: $tag1 ***"
               # Ex: 6.0.0
-              tag2="wordlift/wordpress-nginx:$version"
+              tag2="${{ github.repository }}:$version"
               echo "*** Tag 2: $tag2 ***"
               # Ex: 6.0.0-debian-11-r0
-              tag3="wordlift/wordpress-nginx:$tag"
+              tag3="${{ github.repository }}:$tag"
               echo "*** Tag 3: $tag3 ***"
               
               ## Tag the images
