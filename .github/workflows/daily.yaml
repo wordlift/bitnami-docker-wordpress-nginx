@@ -1,4 +1,4 @@
-name: 'Discover new tags and build images'
+name: 'Checkout the bitnami repo and build images'
 on:
   schedule:
     - cron: '0 1 * * *'
@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Merge upstream
         run: |
-        
+
           # Checkout the repository
           echo "*** Configuring the local git ***"
           git config --global user.email "repo-bitnami-docker-wordpress-nginx@wordlift.io"
@@ -33,10 +33,16 @@ jobs:
               # Apply the patch
               curl -s https://gist.githubusercontent.com/ziodave/20ab49f5ea2e6e500255c7e5ff1fd5e2/raw/e820c925f07ec26bdb6e87353d142a1d3445d7d3/1.patch | git apply -
 
-
-              tag_0="${{ github.repository }}$(echo $tag | pcregrep -o1 '^(\d+)')"
-              tag_1="${{ github.repository }}$(echo $tag | pcregrep -o1 -o2 '^(\d+)\.\d+\.\d+(-\w+-\d+)')"
-              tag_2="${{ github.repository }}$(echo $tag | pcregrep -o1 '^(\d+\.\d+\.\d+)')"
+              version=$(echo $tag | cut -d '-' -f1)
+              os=$(echo $tag | cut -d '-' -f2)
+              osrel=$(echo $tag | cut -d '-' -f3)
+              # Ex: 6
+              tag_0="${{ github.repository }}$(echo $version | grep -Eo '^(\d+)')"
+              # Ex: 6-debian-11
+              tag_1="${{ github.repository }}$tag_0-$os-$osrel"
+              # Ex: 6.0.0
+              tag_2="${{ github.repository }}$version"
+              # Ex: 6.0.0-debian-11-r0
               tag_3="${{ github.repository }}$tag"
               
               tags_switches="-t ${{ github.repository }}$(echo $tag | pcregrep --om-separator=' -t ${{ github.repository }}' -o5 -o4 -o3 -o2 -o1 '^((\d+)\.\d+\.\d+)?(-\w+-\d+).*$' -)"
@@ -45,3 +51,4 @@ jobs:
               echo "*** Building image with tags $tag_0, $tag_1, $tag_2 and $tag_3 ***"
               docker build . -t $tag_0 -t $tag_1 -t $tag_2 -t $tag_3
           done
+
