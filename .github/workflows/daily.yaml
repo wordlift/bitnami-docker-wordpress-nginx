@@ -36,18 +36,24 @@ jobs:
               curl -s https://gist.githubusercontent.com/ziodave/20ab49f5ea2e6e500255c7e5ff1fd5e2/raw/e820c925f07ec26bdb6e87353d142a1d3445d7d3/1.patch | git apply -
 
               echo "*** Preparing tags ***"
-              cut
               version=$(echo $tag | cut -d '-' -f1)
+              echo "*** Version: $version ***"
               os=$(echo $tag | cut -d '-' -f2)
+              echo "*** OS: $os ***"
               osrel=$(echo $tag | cut -d '-' -f3)
+              echo "*** OS Rel: $osrel ***"
               # Ex: 6
               tag0="${{ github.repository }}$(echo $version | grep -Eo '^(\d+)')"
+              echo "*** Tag 0: $tag0 ***"
               # Ex: 6-debian-11
               tag1="${{ github.repository }}$tag0-$os-$osrel"
+              echo "*** Tag 1: $tag1 ***"
               # Ex: 6.0.0
               tag2="${{ github.repository }}$version"
+              echo "*** Tag 2: $tag2 ***"
               # Ex: 6.0.0-debian-11-r0
               tag3="${{ github.repository }}$tag"
+              echo "*** Tag 3: $tag3 ***"
               
               ## Tag the images
               echo "*** Building image with tags $tag0, $tag1, $tag2 and $tag3 ***"
