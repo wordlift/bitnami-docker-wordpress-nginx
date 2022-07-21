@@ -25,7 +25,7 @@ jobs:
 
           # Build the images
           echo ${{ secrets.GITHUB_TOKEN }} | docker login --username ${{ github.repository_owner }} --password-stdin ghcr.io
-          echo ${{ secrets.DOCKER_TOKEN }} | docker login --username ${{ secrets.DOCKER_USER }}
+          echo ${{ secrets.DOCKER_TOKEN }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
 
           tags=$(git describe --tags $(git rev-list --tags --after=$(date -d '-1 day' '+%s')))
           for tag in $tags; do
