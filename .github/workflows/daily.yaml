@@ -32,24 +32,24 @@ jobs:
               git checkout $tag
 
               # Apply the patch
+              echo "*** Applying patch ***"
               curl -s https://gist.githubusercontent.com/ziodave/20ab49f5ea2e6e500255c7e5ff1fd5e2/raw/e820c925f07ec26bdb6e87353d142a1d3445d7d3/1.patch | git apply -
 
+              echo "*** Preparing tags ***"
               version=$(echo $tag | cut -d '-' -f1)
               os=$(echo $tag | cut -d '-' -f2)
               osrel=$(echo $tag | cut -d '-' -f3)
               # Ex: 6
-              tag_0="${{ github.repository }}$(echo $version | grep -Eo '^(\d+)')"
+              tag0="${{ github.repository }}$(echo $version | grep -Eo '^(\d+)')"
               # Ex: 6-debian-11
-              tag_1="${{ github.repository }}$tag_0-$os-$osrel"
+              tag1="${{ github.repository }}$tag0-$os-$osrel"
               # Ex: 6.0.0
-              tag_2="${{ github.repository }}$version"
+              tag2="${{ github.repository }}$version"
               # Ex: 6.0.0-debian-11-r0
-              tag_3="${{ github.repository }}$tag"
+              tag3="${{ github.repository }}$tag"
               
-              tags_switches="-t ${{ github.repository }}$(echo $tag | pcregrep --om-separator=' -t ${{ github.repository }}' -o5 -o4 -o3 -o2 -o1 '^((\d+)\.\d+\.\d+)?(-\w+-\d+).*$' -)"
-
               ## Tag the images
-              echo "*** Building image with tags $tag_0, $tag_1, $tag_2 and $tag_3 ***"
-              docker build . -t $tag_0 -t $tag_1 -t $tag_2 -t $tag_3
+              echo "*** Building image with tags $tag0, $tag1, $tag2 and $tag3 ***"
+              docker build . -t $tag0 -t $tag1 -t $tag2 -t $tag3
           done
 
