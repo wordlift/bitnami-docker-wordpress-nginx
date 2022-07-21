@@ -48,7 +48,7 @@ jobs:
               tag0="${{ github.repository }}:$major"
               echo "*** Tag 0: $tag0 ***"
               # Ex: 6-debian-11
-              tag1="${{ github.repository }}:$tag0-$os-$osrel"
+              tag1="${{ github.repository }}:$major-$os-$osrel"
               echo "*** Tag 1: $tag1 ***"
               # Ex: 6.0.0
               tag2="${{ github.repository }}:$version"
