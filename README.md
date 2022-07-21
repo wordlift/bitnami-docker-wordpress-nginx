@@ -1,6 +1,6 @@
 ![Daily Builds](https://github.com/wordlift/bitnami-docker-wordpress-nginx/actions/workflows/daily.yaml/badge.svg)
 
-# WordPress NGINX
+# WordPress NGINX + php-redis
 
 The aim of this repo is to create a [bitnami/wordpress-nginx](https://github.com/bitnami/bitnami-docker-wordpress-nginx/) docker image extended with the php-redis extension.
 
