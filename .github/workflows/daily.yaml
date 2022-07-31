@@ -20,7 +20,7 @@ jobs:
 
           ## Checkout the tags
           echo "*** Cloning the original bitnami/containers repo ***"
-          git clone \                                                                                                                                                              ✘ 130 main
+          git clone \
             --depth 2  \
             --filter=blob:none  \
             --sparse \
