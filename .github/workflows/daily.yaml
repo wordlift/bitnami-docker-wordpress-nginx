@@ -33,8 +33,7 @@ jobs:
           echo ${{ secrets.GITHUB_TOKEN }} | docker login --username ${{ github.repository_owner }} --password-stdin ghcr.io
           echo ${{ secrets.DOCKER_TOKEN }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
 
-          logs=$(git log --since="1 day ago" --pretty=tformat:"%C(auto)%h %s" --grep="\[bitnami/wordpress-nginx\] [R|r]elease" --author bitnami-bot@vmware.com --author containers@bitnami.com --author containers-bot@bitnami.com)
-          tags=$(git describe --tags $(git rev-list --tags --after=$(date -d '-1 day' '+%s')))
+          logs=$(git log --since="1 day ago" --pretty=tformat:"%C(auto)%h %s" --grep="\[bitnami/wordpress-nginx\] [R|r]elease" --author bitnami-bot@vmware.com --author containers@bitnami.com --author containers-bot@bitnami.com || true)
           for log in $logs; do
               commit=$(echo $log | cut -f1 -d' ')
               tag=$(echo $log | cut -f4 -d' ')
