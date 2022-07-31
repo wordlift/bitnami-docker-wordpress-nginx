@@ -19,18 +19,28 @@ jobs:
           git config --global advice.detachedHead false
 
           ## Checkout the tags
-          echo "*** Cloning the original bitnami/bitnami-docker-wordpress-nginx repo ***"
-          git clone https://github.com/bitnami/containers.git
-          cd containers/bitnami/wordpress-nginx
+          echo "*** Cloning the original bitnami/containers repo ***"
+          git clone \                                                                                                                                                              ✘ 130 main
+            --depth 2  \
+            --filter=blob:none  \
+            --sparse \
+            https://github.com/bitnami/containers ;
+            cd containers ;
+            git sparse-checkout set bitnami/wordpress-nginx ;
+            cd bitnami/wordpress-nginx
 
           # Build the images
           echo ${{ secrets.GITHUB_TOKEN }} | docker login --username ${{ github.repository_owner }} --password-stdin ghcr.io
           echo ${{ secrets.DOCKER_TOKEN }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
 
+          logs=$(git log --since="1 day ago" --pretty=tformat:"%C(auto)%h %s" --grep="\[bitnami/wordpress-nginx\] [R|r]elease" --author bitnami-bot@vmware.com --author containers@bitnami.com --author containers-bot@bitnami.com)
           tags=$(git describe --tags $(git rev-list --tags --after=$(date -d '-1 day' '+%s')))
-          for tag in $tags; do
-              echo "*** Checking out tag $tag ***"
-              git checkout $tag
+          for log in $logs; do
+              commit=$(echo $log | cut -f1 -d' ')
+              tag=$(echo $log | cut -f4 -d' ')
+              
+              echo "*** Checking out commit $commit ***"
+              git checkout $commit
 
               # Apply the patch
               echo "*** Applying patch ***"
