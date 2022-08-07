@@ -82,4 +82,6 @@ jobs:
               docker push $tag1
               docker push $tag2
               docker push $tag3
+
+              git reset --hard
           done <<< $logs
