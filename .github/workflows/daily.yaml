@@ -12,7 +12,7 @@ jobs:
       - name: Merge upstream
         run: |
 
-          export since="1 day ago"
+          export since="10 days ago"
 
           # Checkout the repository
           echo "*** Configuring the local git ***"
@@ -36,9 +36,9 @@ jobs:
           echo ${{ secrets.DOCKER_TOKEN }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
 
           logs=$(git log --reverse --since="$since" --pretty=tformat:"%C(auto)%h %s" --grep="\[bitnami/wordpress-nginx\] [R|r]elease" --author bitnami-bot@vmware.com --author containers@bitnami.com --author containers-bot@bitnami.com || true)
-          for log in $logs; do
-              commit=$(echo $logs | cut -f1 -d' ')
-              tag=$(echo $logs | cut -f4 -d' ')
+          while IFS= read -r log; do
+              commit=$(echo $log | cut -f1 -d' ')
+              tag=$(echo $log | cut -f4 -d' ')
               
               echo "*** Checking out commit $commit ***"
               git checkout $commit
@@ -82,4 +82,4 @@ jobs:
               docker push $tag1
               docker push $tag2
               docker push $tag3
-          done
+          done <<< $logs
