@@ -12,7 +12,7 @@ jobs:
       - name: Merge upstream
         run: |
 
-          export since="1 day ago"
+          export since="30 days ago"
 
           # Checkout the repository
           echo "*** Configuring the local git ***"
@@ -45,7 +45,7 @@ jobs:
 
               # Apply the patch
               echo "*** Applying patch ***"
-              curl -s https://gist.githubusercontent.com/ziodave/20ab49f5ea2e6e500255c7e5ff1fd5e2/raw/e820c925f07ec26bdb6e87353d142a1d3445d7d3/1.patch | git apply -
+              curl -s https://gist.githubusercontent.com/ziodave/20ab49f5ea2e6e500255c7e5ff1fd5e2/raw/e820c925f07ec26bdb6e87353d142a1d3445d7d3/1.patch | patch -p1
 
               echo "*** Preparing tags ***"
               version=$(echo $tag | cut -d '-' -f1)
