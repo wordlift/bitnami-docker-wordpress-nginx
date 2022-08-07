@@ -12,6 +12,8 @@ jobs:
       - name: Merge upstream
         run: |
 
+          export since="10 days ago"
+
           # Checkout the repository
           echo "*** Configuring the local git ***"
           git config --global user.email "repo-bitnami-docker-wordpress-nginx@wordlift.io"
@@ -21,7 +23,7 @@ jobs:
           ## Checkout the tags
           echo "*** Cloning the original bitnami/containers repo ***"
           git clone \
-            --depth 2  \
+            --shallow-since="$since"  \
             --filter=blob:none  \
             --sparse \
             https://github.com/bitnami/containers ;
@@ -33,7 +35,7 @@ jobs:
           echo ${{ secrets.GITHUB_TOKEN }} | docker login --username ${{ github.repository_owner }} --password-stdin ghcr.io
           echo ${{ secrets.DOCKER_TOKEN }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
 
-          logs=$(git log --since="1 day ago" --pretty=tformat:"%C(auto)%h %s" --grep="\[bitnami/wordpress-nginx\] [R|r]elease" --author bitnami-bot@vmware.com --author containers@bitnami.com --author containers-bot@bitnami.com || true)
+          logs=$(git log --since="$since" --pretty=tformat:"%C(auto)%h %s" --grep="\[bitnami/wordpress-nginx\] [R|r]elease" --author bitnami-bot@vmware.com --author containers@bitnami.com --author containers-bot@bitnami.com || true)
           for log in $logs; do
               commit=$(echo $log | cut -f1 -d' ')
               tag=$(echo $log | cut -f4 -d' ')
