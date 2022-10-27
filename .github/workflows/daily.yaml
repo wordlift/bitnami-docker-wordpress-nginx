@@ -40,6 +40,10 @@ jobs:
               commit=$(echo $log | cut -f1 -d' ')
               tag=$(echo $log | cut -f4 -d' ')
               
+              echo "*** Log: $log ***"
+              echo "*** Commit: $commit ***"
+              echo "*** Tag: $tag ***"
+
               echo "*** Checking out commit $commit ***"
               git checkout $commit
 
