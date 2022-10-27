@@ -49,7 +49,7 @@ jobs:
 
               # Apply the patch
               echo "*** Applying patch ***"
-              curl -s https://gist.githubusercontent.com/ziodave/20ab49f5ea2e6e500255c7e5ff1fd5e2/raw/e820c925f07ec26bdb6e87353d142a1d3445d7d3/1.patch | patch -p1
+              curl -s https://gist.githubusercontent.com/ziodave/20ab49f5ea2e6e500255c7e5ff1fd5e2/raw/306748d587772a00f32b7288b3d081890b5e7232/1.patch | patch -p1
 
               echo "*** Preparing tags ***"
               version=$(echo $tag | cut -d '-' -f1)
