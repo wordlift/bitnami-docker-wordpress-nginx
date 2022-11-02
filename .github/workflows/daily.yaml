@@ -36,7 +36,9 @@ jobs:
           echo ${{ secrets.DOCKER_TOKEN }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
 
           logs=$(git log --reverse --since="$since" --pretty=tformat:"%C(auto)%h %s" --grep="\[bitnami/wordpress-nginx\] [R|r]elease" --author bitnami-bot@vmware.com --author containers@bitnami.com --author containers-bot@bitnami.com || true)
-          while IFS= read -r log && [[ !-z "$log" ]]; do
+          while IFS= read -r log; do
+              [ -z "$log" ] && continue
+
               commit=$(echo $log | cut -f1 -d' ')
               tag=$(echo $log | cut -f4 -d' ')
               
