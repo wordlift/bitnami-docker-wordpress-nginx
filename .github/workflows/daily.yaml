@@ -23,7 +23,7 @@ jobs:
           ## Checkout the tags
           echo "*** Cloning the original bitnami/containers repo ***"
           git clone \
-            --shallow-since="$since"  \
+            --shallow-since="3 weeks"  \
             --filter=blob:none  \
             --sparse \
             https://github.com/bitnami/containers ;
