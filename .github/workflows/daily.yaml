@@ -77,7 +77,7 @@ jobs:
               
               ## Tag the images
               echo "*** Building image in $major/$os-$osrel with tags $tag0, $tag1, $tag2 and $tag3 ***"
-              docker build "$major/$os-$osrel" \
+              docker buildx build "6/debian-12" \
                 -t ghcr.io/$tag0 -t ghcr.io/$tag1 -t ghcr.io/$tag2 -t ghcr.io/$tag3 \
                 -t $tag0 -t $tag1 -t $tag2 -t $tag3
               docker push ghcr.io/$tag0
