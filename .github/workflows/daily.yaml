@@ -12,7 +12,7 @@ jobs:
       - name: Merge upstream
         run: |
 
-          export since="1 day ago"
+          export since="2024-08-24"
 
           # Checkout the repository
           echo "*** Configuring the local git ***"
