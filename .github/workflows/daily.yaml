@@ -12,7 +12,7 @@ jobs:
       - name: Merge upstream
         run: |
 
-          export since="2024-08-24"
+          export since="2024-11-05"
 
           # Checkout the repository
           echo "*** Configuring the local git ***"
@@ -40,7 +40,8 @@ jobs:
               [ -z "$log" ] && continue
 
               commit=$(echo $log | cut -f1 -d' ')
-              tag=$(echo $log | cut -f4 -d' ')
+              tag_with_prefix=$(echo $log | cut -f4 -d' ')
+              tag=${tag_with_prefix#wordpress-nginx-}
               
               echo "*** Log: $log ***"
               echo "*** Commit: $commit ***"
