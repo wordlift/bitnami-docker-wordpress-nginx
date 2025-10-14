@@ -5,90 +5,107 @@ on:
   workflow_dispatch:
 
 jobs:
-  merge:
+  discover-commits:
     runs-on: ubuntu-latest
+    outputs:
+      commits: ${{ steps.get-commits.outputs.commits }}
     steps:
       - uses: actions/checkout@v2
-      - name: Merge upstream
+      - name: Get commits to process
+        id: get-commits
         run: |
-
           export since="2025-04-01"
-
-          # Checkout the repository
-          echo "*** Configuring the local git ***"
-          git config --global user.email "repo-bitnami-docker-wordpress-nginx@wordlift.io"
-          git config --global user.name "wordlift-bot"
+          
+          # Clone and setup the repository
           git config --global advice.detachedHead false
-
-          ## Checkout the tags
-          echo "*** Cloning the original bitnami/containers repo ***"
           git clone \
-            --shallow-since="$since"  \
-            --filter=blob:none  \
+            --shallow-since="$since" \
+            --filter=blob:none \
             --sparse \
-            https://github.com/bitnami/containers ;
-            cd containers ;
-            git sparse-checkout set bitnami/wordpress-nginx ;
-            cd bitnami/wordpress-nginx
+            https://github.com/bitnami/containers
+          cd containers
+          git sparse-checkout set bitnami/wordpress-nginx
+          cd bitnami/wordpress-nginx
+          
+          # Get the commit logs and convert to JSON array
+          logs=$(git log --reverse --since="$since" --pretty=tformat:"%h|%s" --grep="\[bitnami/wordpress-nginx\] [R|r]elease" --author bitnami-bot@vmware.com --author containers@bitnami.com --author containers-bot@bitnami.com --author bitnami.bot@broadcom.com || true)
+          
+          # Convert to JSON array
+          commits_json="["
+          first=true
+          while IFS= read -r log; do
+            [ -z "$log" ] && continue
+          
+            short_commit=$(echo "$log" | cut -f1 -d'|')
+            commit=$(git rev-parse $short_commit)
+            message=$(echo "$log" | cut -f2- -d'|')
+            tag_with_prefix=$(echo "$message" | cut -f3 -d' ')
+            tag=${tag_with_prefix#wordpress-nginx-}
+          
+            if [ "$first" = true ]; then
+              first=false
+            else
+              commits_json+=","
+            fi
+          
+            commits_json+="{\"tag\":\"$tag\",\"commit\":\"$commit\",\"message\":\"$message\"}"
+          done <<< "$logs"
+          commits_json+="]"
+          
+          echo "commits=$commits_json" >> $GITHUB_OUTPUT
 
-          # Build the images
+  build-images:
+    needs: discover-commits
+    runs-on: ubuntu-latest
+    if: needs.discover-commits.outputs.commits != '[]'
+    strategy:
+      matrix:
+        commit: ${{ fromJson(needs.discover-commits.outputs.commits) }}
+      fail-fast: false  # Allow other jobs to continue if one fails
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build image for commit ${{ matrix.commit.tag }}
+        run: |
+          commit="${{ matrix.commit.commit }}"
+          tag="${{ matrix.commit.tag }}"
+
+          echo "*** Processing commit: $commit ***"
+          echo "*** Tag: $tag ***"
+
+          curl -L "https://github.com/bitnami/containers/archive/$commit.tar.gz" | tar xz
+          cd "containers-$commit/bitnami/wordpress-nginx"
+
+          # Apply the patch
+          echo "*** Applying patch ***"
+          curl -s https://gist.githubusercontent.com/ziodave/20ab49f5ea2e6e500255c7e5ff1fd5e2/raw/5417b50fe5b4667920297298c1887e4b37faa747/1.patch | patch -p1
+          
+          # Login to registries
           echo ${{ secrets.GITHUB_TOKEN }} | docker login --username ${{ github.repository_owner }} --password-stdin ghcr.io
           echo ${{ secrets.DOCKER_TOKEN }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
-
-          logs=$(git log --reverse --since="$since" --pretty=tformat:"%C(auto)%h %s" --grep="\[bitnami/wordpress-nginx\] [R|r]elease" --author bitnami-bot@vmware.com --author containers@bitnami.com --author containers-bot@bitnami.com --author bitnami.bot@broadcom.com || true)
-          while IFS= read -r log; do
-              [ -z "$log" ] && continue
-
-              commit=$(echo $log | cut -f1 -d' ')
-              tag_with_prefix=$(echo $log | cut -f4 -d' ')
-              tag=${tag_with_prefix#wordpress-nginx-}
-              
-              echo "*** Log: $log ***"
-              echo "*** Commit: $commit ***"
-              echo "*** Tag: $tag ***"
-
-              echo "*** Checking out commit $commit ***"
-              git checkout $commit
-
-              # Apply the patch
-              echo "*** Applying patch ***"
-              curl -s https://gist.githubusercontent.com/ziodave/20ab49f5ea2e6e500255c7e5ff1fd5e2/raw/5417b50fe5b4667920297298c1887e4b37faa747/1.patch | patch -p1
-
-              echo "*** Preparing tags ***"
-              version=$(echo $tag | cut -d '-' -f1)
-              echo "*** Version: $version ***"
-              major=$(echo $version | cut -d'.' -f1)
-              echo "*** Major: $major ***"
-              os=$(echo $tag | cut -d '-' -f2)
-              echo "*** OS: $os ***"
-              osrel=$(echo $tag | cut -d '-' -f3)
-              echo "*** OS Rel: $osrel ***"
-              # Ex: 6
-              tag0="wordlift/wordpress-nginx:$major"
-              echo "*** Tag 0: $tag0 ***"
-              # Ex: 6-debian-11
-              tag1="wordlift/wordpress-nginx:$major-$os-$osrel"
-              echo "*** Tag 1: $tag1 ***"
-              # Ex: 6.0.0
-              tag2="wordlift/wordpress-nginx:$version"
-              echo "*** Tag 2: $tag2 ***"
-              # Ex: 6.0.0-debian-11-r0
-              tag3="wordlift/wordpress-nginx:$tag"
-              echo "*** Tag 3: $tag3 ***"
-              
-              ## Tag the images
-              echo "*** Building image in $major/$os-$osrel with tags $tag0, $tag1, $tag2 and $tag3 ***"
-              docker buildx build "6/debian-12" \
-                -t ghcr.io/$tag0 -t ghcr.io/$tag1 -t ghcr.io/$tag2 -t ghcr.io/$tag3 \
-                -t $tag0 -t $tag1 -t $tag2 -t $tag3
-              docker push ghcr.io/$tag0
-              docker push ghcr.io/$tag1
-              docker push ghcr.io/$tag2
-              docker push ghcr.io/$tag3
-              docker push $tag0
-              docker push $tag1
-              docker push $tag2
-              docker push $tag3
-
-              git reset --hard
-          done <<< $logs
+          
+          # Prepare tags
+          version=$(echo $tag | cut -d '-' -f1)
+          major=$(echo $version | cut -d'.' -f1)
+          os=$(echo $tag | cut -d '-' -f2)
+          osrel=$(echo $tag | cut -d '-' -f3)
+          
+          tag0="wordlift/wordpress-nginx:$major"
+          tag1="wordlift/wordpress-nginx:$major-$os-$osrel"
+          tag2="wordlift/wordpress-nginx:$version"
+          tag3="wordlift/wordpress-nginx:$tag"
+          
+          echo "*** Building image with tags: $tag0, $tag1, $tag2, $tag3 ***"
+          
+          # Build and push
+          docker buildx build "6/debian-12" \
+            -t ghcr.io/$tag0 -t ghcr.io/$tag1 -t ghcr.io/$tag2 -t ghcr.io/$tag3 \
+            -t $tag0 -t $tag1 -t $tag2 -t $tag3
+          
+          docker push ghcr.io/$tag0
+          docker push ghcr.io/$tag1
+          docker push ghcr.io/$tag2
+          docker push ghcr.io/$tag3
+          docker push $tag0
+          docker push $tag1
+          docker push $tag2
+          docker push $tag3
