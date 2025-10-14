@@ -35,7 +35,7 @@ jobs:
           echo ${{ secrets.GITHUB_TOKEN }} | docker login --username ${{ github.repository_owner }} --password-stdin ghcr.io
           echo ${{ secrets.DOCKER_TOKEN }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
 
-          logs=$(git log --reverse --since="$since" --pretty=tformat:"%C(auto)%h %s" --grep="\[bitnami/wordpress-nginx\] [R|r]elease" --author bitnami-bot@vmware.com --author containers@bitnami.com --author containers-bot@bitnami.com || true)
+          logs=$(git log --reverse --since="$since" --pretty=tformat:"%C(auto)%h %s" --grep="\[bitnami/wordpress-nginx\] [R|r]elease" --author bitnami-bot@vmware.com --author containers@bitnami.com --author containers-bot@bitnami.com --author bitnami.bot@broadcom.com || true)
           while IFS= read -r log; do
               [ -z "$log" ] && continue
 
