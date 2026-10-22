@@ -6,6 +6,11 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE} AS build
 USER root
 
+# Debian 11 (used by 6.2.2) is end-of-life; its packages now live on archive.debian.org.
+RUN if grep -q bullseye /etc/os-release; then \
+      printf 'deb http://archive.debian.org/debian bullseye main\ndeb http://archive.debian.org/debian-security bullseye-security main\n' > /etc/apt/sources.list; \
+    fi
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential autoconf pkg-config bison re2c xz-utils curl ca-certificates \
       libxml2-dev libssl-dev libbz2-dev libcurl4-openssl-dev libpng-dev libjpeg-dev \
