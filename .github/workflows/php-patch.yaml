@@ -1,0 +1,48 @@
+name: 'Patch PHP 8.2.35 into production images'
+
+# PR: build and check. Merge to main: build, check, publish <tag>-php8.2.35.
+on:
+  pull_request:
+    paths: ['php-patch/**', '.github/workflows/php-patch.yaml']
+  push:
+    branches: [main]
+    paths: ['php-patch/**', '.github/workflows/php-patch.yaml']
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ['6.8.3', '6.5.3', '6.2.2']   # store, app, sites
+    env:
+      ORIGINAL: wordlift/wordpress-nginx:${{ matrix.tag }}
+      PATCHED: wordlift/wordpress-nginx:${{ matrix.tag }}-php8.2.35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: docker build php-patch --build-arg BASE_IMAGE="$ORIGINAL" -t "$PATCHED"
+
+      - name: Check PHP is 8.2.35 and the same extensions load as before
+        run: |
+          modules() { docker run --rm --entrypoint php "$1" -m; }
+          diff <(modules "$ORIGINAL") <(modules "$PATCHED")
+          docker run --rm --entrypoint php "$PATCHED" -v | grep '^PHP 8.2.35 '
+          docker run --rm --entrypoint php-fpm "$PATCHED" -t
+
+      - name: Publish
+        if: github.event_name == 'push'
+        run: |
+          if docker manifest inspect "$PATCHED" >/dev/null 2>&1; then
+            echo "$PATCHED already exists, not overwriting"; exit 0
+          fi
+          echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
+          docker tag "$PATCHED" "ghcr.io/$PATCHED"
+          docker push "$PATCHED"
+          docker push "ghcr.io/$PATCHED"
